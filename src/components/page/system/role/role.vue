@@ -8,6 +8,7 @@
         <div class="container">
             <div class="handle-box">
                 <el-button type="primary" icon="el-icon-delete" class="handle-del mr10">批量删除</el-button>
+                <el-button type="primary" icon="el-icon-delete" class="handle-del mr10" @click="add">添加</el-button>
                 <el-input placeholder="筛选关键词" class="handle-input mr10"></el-input>
                 <el-button type="primary" icon="el-icon-search" >搜索</el-button>
             </div>
@@ -39,7 +40,36 @@
             </div>
         </div>
 
-        
+        <!-- 编辑弹出框 -->
+        <el-dialog :title="titleName"  :visible.sync="editVisible" width="30%">
+            <el-form ref="form" :model="form" label-width="70px">
+                <el-form-item label="角色名称">
+                <el-input v-model="form.roleName" class="input"></el-input>
+                </el-form-item>
+                <el-form-item label="CODE">
+                    <el-input v-model="form.roleCode" class="input"></el-input>
+                </el-form-item>
+                
+                <el-form-item label="权限菜单" >
+                    
+                     <el-tree :data="treeData"
+                        show-checkbox
+                        default-expand-all
+                        node-key="id"
+                        ref="tree"
+                        highlight-current
+                        :props="defaultProps"
+                         style="height:200px;overflow:auto;"
+                        >
+                        </el-tree>
+
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="editVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveEdit">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
   
@@ -50,11 +80,20 @@
         name: 'basetable',
         data() {
             return {
+                editVisible: false,
                 page:1,
                 total:1000,
                 pageSize:10,
                 tableData: [],
                 multipleSelection: [],
+                treeData:{},
+                form:{
+
+                },
+                defaultProps: {
+                children: 'children',
+                label: 'name'
+                }
             }
         },
         created() {
@@ -73,6 +112,17 @@
             },
              handleSelectionChange(val) {
                 this.multipleSelection = val;
+            },
+            async add(){
+               this.form={};
+               this.editVisible=true;
+               this.titleName="添加";
+               if(this.treeData!=null){
+                 const role = await this.$http.get(baseURL_.sysUrl+'/sysRole/getPermissions');
+                 this.treeData=role.data.data;
+               }
+               
+
             },
             // 初始化数据
             async getData() {
@@ -121,5 +171,9 @@
     }
     .container{
         min-height:500px;
+    }
+    .el-form-item__content{
+        height:150px !important;
+        background-color:red !important;
     }
 </style>
